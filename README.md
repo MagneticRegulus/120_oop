@@ -6,6 +6,8 @@ A repository for all exercises and notes for course 120 on OOP.
 
 ### Introduction - 6/1/18
 ### OO Book
+Chapter 1: The Object Model
+- exercises 1 & 2 - 6/1/18
 
 ## Lesson 2: Object Oriented Programming
 
