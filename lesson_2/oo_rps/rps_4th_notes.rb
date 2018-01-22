@@ -149,4 +149,14 @@ class Move
   end
 end
 
+class Rule
+  def initialize
+    # what should the state of this object be?
+  end
+end
+
+def compare(move1, move2)
+  # where does this go?
+end
+
 RPSGame.new.play

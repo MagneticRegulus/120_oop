@@ -28,6 +28,8 @@ Chapter 4: Inheritance
 - Rubocop File - 22/1/18
 - Assignment: OO Rock Paper Scissors - 22/1/18
 - Walk-through: OO Rock Paper Scissors - 22/1/18
+- Walk-through: OO RPS Design Choice 1 - 22/1/18
+- Walk-through: OO RPS Design Choice 2 - 22/1/18
 
 ## Lesson 3: More OO Ruby
 

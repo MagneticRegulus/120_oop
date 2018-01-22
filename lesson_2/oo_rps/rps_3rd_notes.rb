@@ -20,12 +20,19 @@ class RPSGame
     puts "#{human.name} chose #{human.move}."
     puts "#{computer.name} chose #{computer.move}."
 
-    if human.move > computer.move
-      puts "#{human.name} won!"
-    elsif human.move < computer.move
-      puts "#{computer.name} won!"
-    else
-      puts "It's a tie!"
+    case human.move
+    when 'rock'
+      puts "It's a tie!" if computer.move == 'rock'
+      puts "#{human.name} won!" if computer.move == 'scissors'
+      puts "#{computer.name} won!" if computer.move == 'paper'
+    when 'paper'
+      puts "It's a tie!" if computer.move == 'paper'
+      puts "#{human.name} won!" if computer.move == 'rock'
+      puts "#{computer.name} won!" if computer.move == 'scissors'
+    when 'scissors'
+      puts "It's a tie!" if computer.move == 'scissors'
+      puts "#{human.name} won!" if computer.move == 'paper'
+      puts "#{computer.name} won!" if computer.move == 'rock'
     end
   end
 
@@ -57,6 +64,8 @@ class RPSGame
 end
 
 class Player
+  CHOICES = ['rock', 'paper', 'scissors']
+
   attr_accessor :move, :name
 
   def initialize
@@ -82,10 +91,10 @@ class Human < Player
     loop do
       puts 'Please choose rock, paper, or scissors:'
       choice = gets.chomp
-      break if Move::CHOICES.include?(choice)
+      break if CHOICES.include?(choice)
       puts 'Invalid choice.'
     end
-    self.move = Move.new(choice)
+    self.move = choice
   end
 end
 
@@ -95,58 +104,25 @@ class Computer < Player
   end
 
   def choose
-    self.move = Move.new(Move::CHOICES.sample)
+    self.move = CHOICES.sample
   end
 end
 
 class Move
-  CHOICES = ['rock', 'paper', 'scissors']
-
-  def initialize(choice)
-    @move = choice
+  def initialize
+    # keep track (of move?)
+    # only 3 available options for a move object
   end
+end
 
-  def rock?
-    @move == 'rock'
+class Rule
+  def initialize
+    # what should the state of this object be?
   end
+end
 
-  def paper?
-    @move == 'paper'
-  end
-
-  def scissors?
-    @move == 'scissors'
-  end
-
-  def >(other_move)
-    if rock?
-      return true if other_move.scissors?
-      return false
-    elsif paper?
-      return true if other_move.rock?
-      return false
-    elsif scissors?
-      return true if other_move.paper?
-      return false
-    end
-  end
-
-  def <(other_move)
-    if rock?
-      return true if other_move.paper?
-      return false
-    elsif paper?
-      return true if other_move.scissors?
-      return false
-    elsif scissors?
-      return true if other_move.rock?
-      return false
-    end
-  end
-
-  def to_s
-    @move
-  end
+def compare(move1, move2)
+  # where does this go?
 end
 
 RPSGame.new.play
