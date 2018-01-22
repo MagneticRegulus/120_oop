@@ -21,10 +21,13 @@ Chapter 4: Inheritance
 ## Lesson 2: Object Oriented Programming
 
 - Introduction - 17/1/18
-- Lecture: Classes and Objects - 21/1/2018
-- Lecture: Inheritance - 21/1/2018
-- Lecture: Collaborator Objects - 21/1/2018
-- Lecture: Modules - 21/1/2018
+- Lecture: Classes and Objects - 21/1/18
+- Lecture: Inheritance - 21/1/18
+- Lecture: Collaborator Objects - 21/1/18
+- Lecture: Modules - 21/1/18
+- Rubocop File - 22/1/18
+- Assignment: OO Rock Paper Scissors - 22/1/18
+- Walk-through: OO Rock Paper Scissors - 22/1/18
 
 ## Lesson 3: More OO Ruby
 
