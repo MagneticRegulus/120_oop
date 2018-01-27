@@ -30,6 +30,9 @@ Chapter 4: Inheritance
 - Walk-through: OO Rock Paper Scissors - 22/1/18
 - Walk-through: OO RPS Design Choice 1 - 22/1/18
 - Walk-through: OO RPS Design Choice 2 - 22/1/18
+- Rubocop OO RPS - 27/1/18
+- Coding Tips - 27/1/18
+- Rubocop: Assignment Branch Condition Size - 27/1/18
 
 ## Lesson 3: More OO Ruby
 
