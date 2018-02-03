@@ -1,11 +1,5 @@
 # OO Rock, Paper, Scissors
 
-module Joinable
-  def joinor(ary, punc, conj='')
-    ary[0..-2].join(punc) + punc + conj + ' ' + ary.last
-  end
-end
-
 class RPSGame
   WIN_SCORE = 10
 
@@ -17,7 +11,7 @@ class RPSGame
   end
 
   def display_welcome_message
-    puts "Welcome to #{Move::CHOICES.map(&:capitalize).join(', ')}!"
+    puts 'Welcome to Rock, Paper, Scissors!'
   end
 
   def display_goodbye_message
@@ -106,8 +100,6 @@ class Player
 end
 
 class Human < Player
-  include Joinable
-
   def set_name
     answer = nil
     loop do
@@ -122,17 +114,12 @@ class Human < Player
   def choose
     choice = nil
     loop do
-      puts "Please choose #{joinor(Move::CHOICES, ', ', 'or')}:"
-      choice = gets.chomp.downcase
-      if Move::CHOICES.include?(choice)
-        self.move = Move.new(choice)
-        break
-      elsif Move::CHOICES.include?(choice.capitalize)
-        self.move = Move.new(choice.capitalize)
-        break
-      end
+      puts 'Please choose rock, paper, or scissors:'
+      choice = gets.chomp
+      break if Move::CHOICES.include?(choice)
       puts 'Invalid choice.'
     end
+    self.move = Move.new(choice)
   end
 end
 
@@ -147,7 +134,7 @@ class Computer < Player
 end
 
 class Move
-  CHOICES = ['rock', 'paper', 'scissors', 'lizard', 'Spock']
+  CHOICES = ['rock', 'paper', 'scissors']
 
   def initialize(choice)
     @move = choice
@@ -165,28 +152,16 @@ class Move
     @move == 'scissors'
   end
 
-  def lizard?
-    @move == 'lizard'
-  end
-
-  def spock?
-    @move.capitalize == 'Spock'
-  end
-
   def >(other_move)
-    (rock? && other_move.scissors?) || (rock? && other_move.lizard?) ||
-      (paper? && other_move.rock?) || (paper? && other_move.spock?) ||
-      (scissors? && other_move.paper?) || (scissors? && other_move.lizard?) ||
-      (lizard? && other_move.paper?) || (lizard? && other_move.spock?) ||
-      (spock? && other_move.rock?) || (spock? && other_move.scissors?)
+    (rock? && other_move.scissors?) ||
+      (paper? && other_move.rock?) ||
+      (scissors? && other_move.paper?)
   end
 
   def <(other_move)
-    (rock? && other_move.paper?) || (rock? && other_move.spock?) ||
-      (paper? && other_move.scissors?) || (paper? && other_move.lizard?) ||
-      (scissors? && other_move.rock?) || (scissors? && other_move.spock?) ||
-      (lizard? && other_move.rock?) || (lizard? && other_move.scissors?) ||
-      (spock? && other_move.paper?) || (spock? && other_move.lizard?)
+    (rock? && other_move.paper?) ||
+      (paper? && other_move.scissors?) ||
+      (scissors? && other_move.rock?)
   end
 
   def to_s

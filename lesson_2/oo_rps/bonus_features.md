@@ -4,6 +4,8 @@
 
 Right now, the game doesn't have very much dramatic flair. It'll be more interesting if we were playing up to, say, 10 points. Whoever reaches 10 points first wins. Can you build this functionality? We have a new noun -- a score. Is that a new class, or a state of an existing class? You can explore both options and see which one works better.
 
+**Maddie**: it makes sense that the score is a state of a player class. This is what I have chosen to do, I have not even checked the class option.
+
 ## Add Lizard and Spock
 
 This is a variation on the normal Rock Paper Scissors game by adding two more options - Lizard and Spock. The full explanation and rules are here: "RPSSL.gif".
