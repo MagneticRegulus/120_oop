@@ -1,13 +1,18 @@
 # OO Rock, Paper, Scissors
 
 module Joinable
-  def joinor(ary, punc, conj='')
-    ary[0..-2].join(punc) + punc + conj + ' ' + ary.last
+  def joiner(ary, punc, conj='')
+    case ary.size
+    when 1 then ary.first
+    when 2 then "#{ary.first} #{conj} #{ary.last}"
+    else
+      ary[0..-2].join(punc) + punc + conj + ' ' + ary.last
+    end
   end
 end
 
 class RPSGame
-  WIN_SCORE = 3
+  WIN_SCORE = 10
 
   attr_accessor :human, :computer
 
@@ -33,18 +38,26 @@ class RPSGame
   def display_winner
     if human.move > computer.move
       human.win
+      computer.lose
     elsif human.move < computer.move
       computer.win
+      human.lose
     else
       puts "It's a tie!"
+      human.tie
+      computer.tie
     end
   end
 
-  def display_scores
+  def display_scores # fix the tallying length
+    ties = human.history.count_ties
     puts "#{'=' * 11}Scoreboard#{'=' * 11}"
     puts "#{human}: #{human.score} pts."
     puts "#{computer}: #{computer.score} pts."
-    puts "First to #{WIN_SCORE} pts is the champion!"
+    puts "#{ties} ties." unless ties == 0
+    unless human.champion? || computer.champion?
+      puts "First to #{WIN_SCORE} pts is the champion!"
+    end
     puts '=' * 32
   end
 
@@ -69,9 +82,11 @@ class RPSGame
     answer.downcase == 'y'
   end
 
-  def clear_scores
+  def clear_players
     human.score = 0
+    human.history = History.new
     computer.score = 0
+    computer.history = History.new
   end
 
   def play
@@ -88,7 +103,7 @@ class RPSGame
       end
       display_champion
       break unless play_again?
-      clear_scores
+      clear_players
     end
 
     display_goodbye_message
@@ -96,16 +111,26 @@ class RPSGame
 end
 
 class Player
-  attr_accessor :move, :name, :score
+  attr_accessor :move, :name, :score, :history
 
   def initialize
     set_name
     @score = 0
+    @history = History.new
   end
 
   def win
     @score += 1
+    history.log(move, :win)
     puts "#{name} won!"
+  end
+
+  def lose
+    history.log(move, :lose)
+  end
+
+  def tie
+    history.log(move, :tie)
   end
 
   def champion?
@@ -134,7 +159,7 @@ class Human < Player
   def choose
     choice = nil
     loop do
-      puts "Please choose #{joinor(Move::CHOICES, ', ', 'or')}:"
+      puts "Please choose #{joiner(Move::CHOICES, ', ', 'or')}:"
       choice = gets.chomp.capitalize
       break if Move::CHOICES.include?(choice)
       puts 'Invalid choice.'
@@ -180,6 +205,34 @@ class Move
 
   def to_s
     @move
+  end
+end
+
+class History
+  include Joinable
+
+  attr_accessor :logbook, :tally
+
+  def initialize
+    @logbook = []
+    @tally = {win: [], lose: [], tie: []}
+  end
+
+  def log(move, outcome)
+    logbook << move.to_s
+    tally[outcome] << move.to_s
+  end
+
+  def to_s # used for testing (do I still need this?)
+    joiner(logbook, ', ', 'and')
+  end
+
+  def count_wins # used for testing (do I still need this?)
+    tally[:win].size
+  end
+
+  def count_ties # used for testing (do I still need this? Have added back)
+    tally[:tie].size
   end
 end
 

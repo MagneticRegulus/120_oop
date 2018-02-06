@@ -20,9 +20,17 @@ What would happen if we went even further and introduced 5 more classes, one for
 
 > **MagneticRegulus**: My first approach to this is that it seems odd to change the code I currently have. Creating 5 new classes seems to be repeating yourself for the sake of doing so. I decided to write up some CRC cards to map the current state and then map out a future state which included the 5 new classes.
 
+> I decided that the individual classes could help determine which choices beat what. However, I have so far been unsuccessful in coding this, so I will try this at some other time.
+
 ## Keep track of a history of moves
 
 As long as the user doesn't quit, keep track of a history of moves by both the human and computer. What data structure will you reach for? Will you use a new class, or an existing class? What will the display output look like?
+
+> **MagneticRegulus**: I used a new class called History to log each players moves in order and to also tally each players winning, losing, and tying moves. Hopefully, this will prove useful in the feature listed below. Each player has a History instance variable which is reset when the Human player decides to play again.
+
+> I have created a `History#to_s` method which spits out a "joined" list of the logged moves for each player. I've also created `History#count_wins` and `History#count_ties` methods in order to count the number of wins and ties for each player. The number of ties should be the same for each player. I have used the latter in order to display ties when at least one has occurred. I was using the former to display wins for each player, but this proved to be unneccessary.
+
+> Currently, the programme is only logging the moves but not using the moves for anything other than displaying the number of ties.
 
 ## Adjust computer choice based on history
 
@@ -31,3 +39,10 @@ Come up with some rules based on the history of moves in order for the computer 
 ## Computer personalities
 
 We have a list of robot names for our Computer class, but other than the name, there's really nothing different about each of them. It'd be interesting to explore how to build different personalities for each robot. For example, R2D2 can always choose "rock". Or, "Hal" can have a very high tendency to choose "scissors", and rarely "rock", but never "paper". You can come up with the rules or personalities for each robot. How would you approach a feature like this?
+
+## Other bits
+
+Remove other invalid entries for the Human player's name (name with spaces, capitalize the name?).
+Include entry shortcuts for the moves (r, p, sc, l, & sp).
+Review code for unused methods.
+Allow for full word "yes" & "no" when asking the Human if they want to play again.
