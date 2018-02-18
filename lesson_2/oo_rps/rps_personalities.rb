@@ -14,7 +14,7 @@ end
 class RPSGame
   include Joinable
 
-  WIN_SCORE = 3
+  WIN_SCORE = 10
 
   attr_accessor :human, :computer
 
@@ -54,7 +54,6 @@ class RPSGame
     puts "#{computer} chose #{computer.move}."
   end
 
-  # rubocop:disable Metrics/AbcSize
   def display_winner
     if human.move > computer.move
       human.win
@@ -69,9 +68,8 @@ class RPSGame
     end
   end
 
-  def display_scores
+  def display_scores # fix the tallying length
     ties = human.history.ties
-    puts ""
     puts "#{'=' * 11}Scoreboard#{'=' * 11}"
     puts "#{human}: #{human.score} pts."
     puts "#{computer}: #{computer.score} pts."
@@ -80,20 +78,14 @@ class RPSGame
       puts "First to #{WIN_SCORE} pts is the champion!"
     end
     puts '=' * 32
-    puts ""
-  end
-  # rubocop:enable Metrics/AbcSize
-
-  def champion?
-    human.champion? || computer.champion?
   end
 
   def display_champion
     if human.champion?
-      puts "#{human} is the champion!\n\n"
+      puts "#{human} is the champion!"
       puts "#{computer} says: #{computer.defeat_quote}"
     elsif computer.champion?
-      puts "#{computer} is the champion!\n\n"
+      puts "#{computer} is the champion!"
       puts "#{computer} says: #{computer.victory_quote}"
     end
   end
@@ -102,7 +94,6 @@ class RPSGame
     answer = nil
 
     loop do
-      puts ""
       puts 'Would you like to play again? (y/n)'
       answer = gets.chomp
       break if %w[y n].include?(answer.downcase)
@@ -129,7 +120,7 @@ class RPSGame
         display_moves
         display_winner
         display_scores
-        break if champion?
+        break if human.champion? || computer.champion?
       end
       display_champion
       break unless play_again?
@@ -200,14 +191,11 @@ end
 
 class Computer < Player
   def choose
-    if history.outcomes.empty?
-      set_random_move
-    elsif history.last_outcome == :tie
-      set_random_move
-    elsif history.outcomes.size < 3
-      set_winning_move
-    elsif history.outcome_trap?
-      set_random_move
+    case
+    when history.outcomes.empty? then set_random_move
+    when history.last_outcome == :tie then set_random_move
+    when history.outcomes.size < 3 then set_winning_move
+    when history.outcome_trap? then set_random_move
     else
       set_winning_move
     end
@@ -336,17 +324,12 @@ class RuthlessAI < Computer
     },
     'GLaDOS' => {
       victory: [
-        "Your entire life has been a mathematical error.
-        A mathematical error I'm about to correct.",
-        "I'm afraid you're about to become the immediate
-        past president of the Being Alive club. Ha ha."
+        "Your entire life has been a mathematical error. A mathematical error I'm about to correct.",
+        "I'm afraid you're about to become the immediate past president of the Being Alive club. Ha ha."
       ],
       defeat: [
-        "Here come the test results: You are a horrible person.
-        I'm serious, that's what it says: A horrible person.
-        We weren't even testing for that.",
-        "Despite your violent behavior, the only thing you've
-        managed to break so far is my heart."
+        "Here come the test results: You are a horrible person. I'm serious, that's what it says: A horrible person. We weren't even testing for that.",
+        "Despite your violent behavior, the only thing you've managed to break so far is my heart."
       ]
     }
   }

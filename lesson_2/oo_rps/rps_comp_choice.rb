@@ -12,32 +12,13 @@ module Joinable
 end
 
 class RPSGame
-  include Joinable
-
-  WIN_SCORE = 3
+  WIN_SCORE = 10
 
   attr_accessor :human, :computer
 
   def initialize
     @human = Human.new
-    @computer = choose_difficulty
-  end
-
-  def choose_difficulty
-    valid_answers = %w[Easy Normal Ruthless]
-    answer = nil
-    loop do
-      puts "Choose a difficulty: #{joiner(valid_answers, ', ', 'or')}"
-      answer = gets.chomp.capitalize
-      break if valid_answers.include?(answer)
-      puts "Sorry, you must choose #{joiner(valid_answers, ', ', 'or')}"
-    end
-
-    case answer
-    when 'Easy' then BasicAI.new
-    when 'Normal' then NormalAI.new
-    when 'Ruthless' then RuthlessAI.new
-    end
+    @computer = Computer.new
   end
 
   def display_welcome_message
@@ -54,7 +35,6 @@ class RPSGame
     puts "#{computer} chose #{computer.move}."
   end
 
-  # rubocop:disable Metrics/AbcSize
   def display_winner
     if human.move > computer.move
       human.win
@@ -69,9 +49,8 @@ class RPSGame
     end
   end
 
-  def display_scores
+  def display_scores # fix the tallying length
     ties = human.history.ties
-    puts ""
     puts "#{'=' * 11}Scoreboard#{'=' * 11}"
     puts "#{human}: #{human.score} pts."
     puts "#{computer}: #{computer.score} pts."
@@ -80,21 +59,13 @@ class RPSGame
       puts "First to #{WIN_SCORE} pts is the champion!"
     end
     puts '=' * 32
-    puts ""
-  end
-  # rubocop:enable Metrics/AbcSize
-
-  def champion?
-    human.champion? || computer.champion?
   end
 
   def display_champion
     if human.champion?
-      puts "#{human} is the champion!\n\n"
-      puts "#{computer} says: #{computer.defeat_quote}"
+      puts "#{human} is the champion!"
     elsif computer.champion?
-      puts "#{computer} is the champion!\n\n"
-      puts "#{computer} says: #{computer.victory_quote}"
+      puts "#{computer} is the champion!"
     end
   end
 
@@ -102,7 +73,6 @@ class RPSGame
     answer = nil
 
     loop do
-      puts ""
       puts 'Would you like to play again? (y/n)'
       answer = gets.chomp
       break if %w[y n].include?(answer.downcase)
@@ -129,7 +99,7 @@ class RPSGame
         display_moves
         display_winner
         display_scores
-        break if champion?
+        break if human.champion? || computer.champion?
       end
       display_champion
       break unless play_again?
@@ -199,15 +169,18 @@ class Human < Player
 end
 
 class Computer < Player
+  ROBOTS = ['R2D2', 'HAL 9000', 'Bender', 'Rosie', 'Tom Servo', 'GLaDOS']
+
+  def set_name
+    self.name = ROBOTS.sample
+  end
+
   def choose
-    if history.outcomes.empty?
-      set_random_move
-    elsif history.last_outcome == :tie
-      set_random_move
-    elsif history.outcomes.size < 3
-      set_winning_move
-    elsif history.outcome_trap?
-      set_random_move
+    case
+    when history.outcomes.empty? then set_random_move
+    when history.last_outcome == :tie then set_random_move
+    when history.outcomes.size < 3 then set_winning_move
+    when history.outcome_trap? then set_random_move
     else
       set_winning_move
     end
@@ -234,138 +207,6 @@ class Computer < Player
   def set_winning_move
     # try to anticipate the human player
     self.move = Move.new(beat_human_move)
-  end
-end
-
-class BasicAI < Computer
-  # always chooses a random move
-
-  BASIC_QUOTES = {
-    'Bender' => {
-      victory: [
-        "Hahahahaha. Oh wait you’re serious. Let me laugh even harder.",
-        "You know what cheers me up? Other people’s misfortune."
-      ],
-      defeat: [
-        "This is the worst kind of discrimination: the kind against me!",
-        "I’m so embarrassed. I wish everyone else was dead!"
-      ]
-    },
-    'Rosie' => {
-      victory: [
-        "A place for everything, and everything in its place.",
-        "Never fear while Rosie is here."
-      ],
-      defeat: [
-        "How about some leftover Velusian Delight?",
-        "I swear on my mother's rechargable batteries, I will end you."
-      ]
-    }
-  }
-
-  def set_name
-    self.name = BASIC_QUOTES.keys.sample
-  end
-
-  def choose
-    set_random_move
-  end
-
-  def victory_quote
-    BASIC_QUOTES[name][:victory].sample
-  end
-
-  def defeat_quote
-    BASIC_QUOTES[name][:defeat].sample
-  end
-end
-
-class NormalAI < Computer
-  # chooses moves based on the default choose method
-
-  NORMAL_QUOTES = {
-    'R2D2' => {
-      victory: [
-        "BEEP BOOP BEEP",
-        "BOOP BLOOP BLEEP BOOP BOOP BEEP BLOOP BEEP BLOOP BOOP"
-      ],
-      defeat: [
-        "BUR-BUR BEDABOO BEEP",
-        "BEEP BOOP BWOOOOOP"
-      ]
-    },
-    'Tom Servo' => {
-      victory: [
-        "YEAH! WHY AM I CHEERING? I DON'T KNOW, BUT YEAH!",
-        "I'm glad I chose kicking butt as a living."
-      ],
-      defeat: [
-        "They must've spent tens of dollars on this.",
-        "Are you a turnip that grew a face?"
-      ]
-    }
-  }
-
-  def set_name
-    self.name = NORMAL_QUOTES.keys.sample
-  end
-
-  def victory_quote
-    NORMAL_QUOTES[name][:victory].sample
-  end
-
-  def defeat_quote
-    NORMAL_QUOTES[name][:defeat].sample
-  end
-end
-
-class RuthlessAI < Computer
-  # mostly default, but will only ever choose rock or scissors when choosing
-  # a random move
-
-  RUTHLESS_QUOTES = {
-    'HAL 9000' => {
-      victory: [
-        "I can see you're really upset about this.",
-        "This game is too important for me to allow you to jeopardize it."
-      ],
-      defeat: [
-        "Daisy, Daisy, give me your answer do.",
-        "My loss can only be attributable to human error."
-      ]
-    },
-    'GLaDOS' => {
-      victory: [
-        "Your entire life has been a mathematical error.
-        A mathematical error I'm about to correct.",
-        "I'm afraid you're about to become the immediate
-        past president of the Being Alive club. Ha ha."
-      ],
-      defeat: [
-        "Here come the test results: You are a horrible person.
-        I'm serious, that's what it says: A horrible person.
-        We weren't even testing for that.",
-        "Despite your violent behavior, the only thing you've
-        managed to break so far is my heart."
-      ]
-    }
-  }
-
-  def set_name
-    self.name = RUTHLESS_QUOTES.keys.sample
-  end
-
-  def victory_quote
-    RUTHLESS_QUOTES[name][:victory].sample
-  end
-
-  def defeat_quote
-    RUTHLESS_QUOTES[name][:defeat].sample
-  end
-
-  def set_random_move
-    # choose random move
-    self.move = Move.new(%w[Rock Scissors].sample)
   end
 end
 
