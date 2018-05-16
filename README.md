@@ -33,11 +33,15 @@ Chapter 4: Inheritance
 - Rubocop OO RPS - 27/1/18
 - Coding Tips - 27/1/18
 - Rubocop: Assignment Branch Condition Size - 27/1/18
+- Finished in Late April
 
 ## Lesson 3: More OO Ruby
 
+- Finished Lesson 3 on 16/05/2018
 
 ## Lesson 4: OO Practice Problems
 
+- Intro - 16/05/2018
+- Easy 1 - 16/05/2018
 
 ## Lesson 5: Slightly Larger OO Programs
