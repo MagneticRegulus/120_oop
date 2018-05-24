@@ -43,5 +43,10 @@ Chapter 4: Inheritance
 
 - Intro - 16/05/2018
 - Easy 1 - 16/05/2018
+- Easy 2 - 16/05/2018
+- Easy 3 - 24/05/2018
+- Medium 1 - 24/05/2018
+- Hard 1 - 24/05/2018
+- Summery - 24/05/2018
 
 ## Lesson 5: Slightly Larger OO Programs
