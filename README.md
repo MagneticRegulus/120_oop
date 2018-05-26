@@ -47,6 +47,10 @@ Chapter 4: Inheritance
 - Easy 3 - 24/05/2018
 - Medium 1 - 24/05/2018
 - Hard 1 - 24/05/2018
-- Summery - 24/05/2018
+- Summary - 24/05/2018
 
 ## Lesson 5: Slightly Larger OO Programs
+
+- Intro - 25/05/2018
+- Assignment: OO Tic Tac Toe - 26/05/2018
+- Walk-through: OO TTT Spike - 26/05/2018
