@@ -54,3 +54,7 @@ Chapter 4: Inheritance
 - Intro - 25/05/2018
 - Assignment: OO Tic Tac Toe - 26/05/2018
 - Walk-through: OO TTT Spike - 26/05/2018
+- Assignment: Some Improvements - 27/05/2018
+- Lecture: Discussion on OO TTT Code - 27/05/2018
+- Rubocop OO TTT - 27/05/2018
+- Assignment: OO TTT Bonus Features - in progress
