@@ -1,7 +1,3 @@
-# move mark methods out of player classes. Marker is now officially an instance
-# variable. Need to be aware of overused constants throughout the game.
-# expect significant changes and debugging coming
-
 module Joinable
   def joinor(ary, punc=', ', conj='or')
     case ary.size
@@ -113,9 +109,7 @@ class Square
 end
 
 class Player
-  MARKERS = ['X', 'O']
-
-  attr_accessor :score, :marker
+  attr_accessor :marker, :score
 
   def initialize(marker)
     @marker = marker
@@ -130,16 +124,10 @@ end
 class Human < Player
   include Joinable
 
-  def initialize
-    puts "Choose your marker: #{joinor(Player::MARKERS)}"
-    answer = nil
-    loop do
-      answer = gets.chomp.upcase
-      break if Player::MARKERS.include?(answer)
-      puts "Sorry, please choose #{joinor(Player::MARKERS)}."
-    end
+  MARKER = 'X'
 
-    super(answer)
+  def initialize
+    super(MARKER)
   end
 
   def mark(board)
@@ -161,18 +149,16 @@ class Human < Player
 end
 
 class Computer < Player
-  def initialize(human)
-    choice = case human.marker
-             when Player::MARKERS[0] then Player::MARKERS[1]
-             when Player::MARKERS[1] then Player::MARKERS[0]
-             end
-    super(choice)
+  MARKER = 'O'
+
+  def initialize
+    super(MARKER)
   end
 
   def mark(board)
     square = nil
-    square = board.find_winning_move(marker) # offense
-    square = board.find_winning_move(Human.marker) if square.nil? # defense
+    square = board.find_winning_move(MARKER) # offense
+    square = board.find_winning_move(Human::MARKER) if square.nil? # defense
     square = 5 if board.unmarked_squares.include?(5) && square.nil? # pick 5
     return super if square.nil? # pick random
 
@@ -194,7 +180,7 @@ class TTTGame
   def initialize
     @board = Board.new
     @human = Human.new
-    @computer = Computer.new(human)
+    @computer = Computer.new
     @current_player = nil
     @round_winner = nil
     @champion = nil
@@ -271,7 +257,7 @@ class TTTGame
   end
 
   def display_board
-    puts "You're #{Human.marker}. Computer is #{Computer.marker}."
+    puts "You're #{human.marker}. Computer is #{computer.marker}."
     display_scores
     board.display
     puts ''
@@ -307,11 +293,11 @@ class TTTGame
 
   def find_winner_and_update_score
     case board.winning_marker
-    when Human.marker
+    when Human::MARKER
       @round_winner = human
       human.score += 1
       @champion = human if human.score >= 5
-    when Computer.marker
+    when Computer::MARKER
       @round_winner = computer
       computer.score += 1
       @champion = computer if computer.score >= 5
