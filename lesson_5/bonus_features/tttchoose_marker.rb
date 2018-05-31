@@ -1,3 +1,7 @@
+# move mark methods out of player classes. Marker is now officially an instance
+# variable. Need to be aware of overused constants throughout the game.
+# expect significant changes and debugging coming
+
 module Joinable
   def joinor(ary, punc=', ', conj='or')
     case ary.size
@@ -21,15 +25,15 @@ class Board
     (1..9).each { |sq| @squares[sq] = Square.new }
   end
 
-  def []=(square, marker)
-    squares[square].marker = marker
+  def []=(sq, marker)
+    squares[sq].marker = marker
   end
 
   def find_move(marker)
-    other_marker = Player::MARKERS.reject { |m| m == marker }.first
+    other_marker = Player::MARKERS.select { |m| m != marker }.first
 
     square = nil
-    square = find_winning_move(marker) if square.nil? # offense
+    square = find_winning_move(marker) # offense
     square = find_winning_move(other_marker) if square.nil? # defense
     square = 5 if unmarked_squares.include?(5) && square.nil? # pick 5
     return unmarked_squares.sample if square.nil? # pick random
@@ -37,8 +41,8 @@ class Board
     square
   end
 
-  def square_empty?(square)
-    squares[square].unmarked?
+  def square_empty?(sq)
+    squares[sq].unmarked?
   end
 
   def unmarked_squares
@@ -88,8 +92,8 @@ class Board
     puts "     |     |"
   end
 
-  def display_squares_at(lft, mid, rght)
-    puts "  #{squares[lft]}  |  #{squares[mid]}  |  #{squares[rght]}"
+  def display_squares_at(lft, mid, rt)
+    puts "  #{squares[lft]}  |  #{squares[mid]}  |  #{squares[rt]}"
   end
 
   def display
@@ -123,29 +127,19 @@ end
 class Player
   MARKERS = ['X', 'O']
 
-  attr_accessor :score, :marker, :name
+  attr_accessor :score, :marker
 
-  def initialize(marker, name)
+  def initialize(marker)
     @marker = marker
-    @name = name
     @score = 0
   end
 
-  def to_s
-    name
-  end
 end
 
 class Human < Player
   include Joinable
 
   def initialize
-    name = set_name
-    choice = choose_marker
-    super(choice, name)
-  end
-
-  def choose_marker
     puts "Choose your marker: #{joinor(Player::MARKERS)}"
     answer = nil
     loop do
@@ -153,30 +147,26 @@ class Human < Player
       break if Player::MARKERS.include?(answer)
       puts "Sorry, please choose #{joinor(Player::MARKERS)}."
     end
-    answer
+
+    super(answer)
   end
 
-  def set_name
-    puts "What's your name?"
-    answer = nil
-    loop do
-      answer = gets.chomp.capitalize
-      break unless answer.empty?
-      puts "Sorry, please enter your name."
-    end
-    answer
+  def to_s
+    "You"
   end
 end
 
 class Computer < Player
-  COMP_NAME = "Computer"
-
   def initialize(human)
     choice = case human.marker
              when Player::MARKERS[0] then Player::MARKERS[1]
              when Player::MARKERS[1] then Player::MARKERS[0]
              end
-    super(choice, COMP_NAME)
+    super(choice)
+  end
+
+  def to_s
+    "Computer"
   end
 end
 
@@ -184,7 +174,7 @@ class TTTGame
   include Joinable
 
   FIRST_PLAYER = 'coin toss'
-  WINNING_SCORE = 3
+  WINNING_SCORE = 5
 
   attr_reader :board, :human, :computer, :players,
               :current_player, :round_winner, :champion
@@ -208,7 +198,12 @@ class TTTGame
       loop do
         set_first_player
         display_board
-        player_turns
+
+        loop do
+          current_player_marks_board
+          break if board.someone_won? || board.full?
+          clear_and_display_board if human_turn?
+        end
 
         find_winner_and_update_score
         break if champion?
@@ -238,9 +233,11 @@ class TTTGame
     end
 
     puts "First Player: #{current_player}."
-    while current_player == computer
-      puts "Press enter to begin."
-      break if gets.chomp.empty?
+    if current_player == computer
+      loop do
+        puts "Press enter to begin."
+        break if gets.chomp.empty?
+      end
     end
   end
 
@@ -264,7 +261,7 @@ class TTTGame
   end
 
   def display_board
-    puts "#{human} is #{human.marker}. #{computer} is #{computer.marker}."
+    puts "You're #{human.marker}. Computer is #{computer.marker}."
     display_scores
     board.display
     puts ''
@@ -282,35 +279,24 @@ class TTTGame
     puts ''
   end
 
-  def player_turns
-    loop do
-      current_player_marks_board
-      break if board.someone_won? || board.full?
-      clear_and_display_board if human_turn?
-    end
-  end
-
   def current_player_marks_board
-    square = human_turn? ? human_moves : computer_moves
+    square = nil
+
+    if human_turn?
+      avail_squares = joinor(board.unmarked_squares)
+      puts "Choose an empty square (#{avail_squares})."
+
+      loop do
+        square = gets.chomp.to_i
+        break if board.unmarked_squares.include?(square)
+        puts "Sorry, choose an empty square (#{avail_squares})."
+      end
+    else
+      square = board.find_move(current_player.marker)
+    end
+
     board[square] = current_player.marker
     switch_to_next_player
-  end
-
-  def human_moves
-    avail_squares = joinor(board.unmarked_squares)
-    puts "Choose an empty square (#{avail_squares})."
-    answer = nil
-
-    loop do
-      answer = gets.chomp.to_i
-      break if board.unmarked_squares.include?(answer)
-      puts "Sorry, choose an empty square (#{avail_squares})."
-    end
-    answer
-  end
-
-  def computer_moves
-    board.find_move(current_player.marker)
   end
 
   def switch_to_next_player
@@ -327,16 +313,16 @@ class TTTGame
   def find_winner_and_update_score
     case board.winning_marker
     when human.marker
-      winner(human)
+      @round_winner = human
+      human.score += 1
+      @champion = human if human.score >= 5
     when computer.marker
-      winner(computer)
+      @round_winner = computer
+      computer.score += 1
+      @champion = computer if computer.score >= 5
+    else
+      return
     end
-  end
-
-  def winner(player)
-    @round_winner = player
-    player.score += 1
-    @champion = player if player.score >= WINNING_SCORE
   end
 
   def champion?
