@@ -21,24 +21,12 @@ class Board
     (1..9).each { |sq| @squares[sq] = Square.new }
   end
 
-  def []=(square, marker)
-    squares[square].marker = marker
+  def []=(sq, marker)
+    squares[sq].marker = marker
   end
 
-  def find_move(marker)
-    other_marker = Player::MARKERS.reject { |m| m == marker }.first
-
-    square = nil
-    square = find_winning_move(marker) if square.nil? # offense
-    square = find_winning_move(other_marker) if square.nil? # defense
-    square = 5 if unmarked_squares.include?(5) && square.nil? # pick 5
-    return unmarked_squares.sample if square.nil? # pick random
-
-    square
-  end
-
-  def square_empty?(square)
-    squares[square].unmarked?
+  def square_empty?(sq)
+    squares[sq].unmarked?
   end
 
   def unmarked_squares
@@ -88,8 +76,8 @@ class Board
     puts "     |     |"
   end
 
-  def display_squares_at(lft, mid, rght)
-    puts "  #{squares[lft]}  |  #{squares[mid]}  |  #{squares[rght]}"
+  def display_squares_at(lft, mid, rt)
+    puts "  #{squares[lft]}  |  #{squares[mid]}  |  #{squares[rt]}"
   end
 
   def display
@@ -121,80 +109,78 @@ class Square
 end
 
 class Player
-  MARKERS = ['X', 'O']
+  attr_accessor :marker, :score
 
-  attr_accessor :score, :marker, :name
-
-  def initialize(marker, name)
+  def initialize(marker)
     @marker = marker
-    @name = name
     @score = 0
   end
 
-  def to_s
-    name
+  def mark(board)
+    board[board.unmarked_squares.sample] = marker
   end
 end
 
 class Human < Player
   include Joinable
 
+  MARKER = 'X'
+
   def initialize
-    name = set_name
-    choice = choose_marker
-    super(choice, name)
+    super(MARKER)
   end
 
-  def choose_marker
-    puts "Choose your marker: #{joinor(Player::MARKERS)}"
-    answer = nil
+  def mark(board)
+    avail_squares = joinor(board.unmarked_squares)
+    puts "Choose an empty square (#{avail_squares}):"
+    square = nil
     loop do
-      answer = gets.chomp.upcase
-      break if Player::MARKERS.include?(answer)
-      puts "Sorry, please choose #{joinor(Player::MARKERS)}."
+      square = gets.chomp.to_i
+      break if board.unmarked_squares.include?(square)
+      puts "Sorry, choose an empty square (#{avail_squares})."
     end
-    answer
+
+    board[square] = marker
   end
 
-  def set_name
-    puts "What's your name?"
-    answer = nil
-    loop do
-      answer = gets.chomp.capitalize
-      break unless answer.empty?
-      puts "Sorry, please enter your name."
-    end
-    answer
+  def to_s
+    "You"
   end
 end
 
 class Computer < Player
-  COMP_NAME = "Computer"
+  MARKER = 'O'
 
-  def initialize(human)
-    choice = case human.marker
-             when Player::MARKERS[0] then Player::MARKERS[1]
-             when Player::MARKERS[1] then Player::MARKERS[0]
-             end
-    super(choice, COMP_NAME)
+  def initialize
+    super(MARKER)
+  end
+
+  def mark(board)
+    square = nil
+    square = board.find_winning_move(MARKER) # offense
+    square = board.find_winning_move(Human::MARKER) if square.nil? # defense
+    square = 5 if board.unmarked_squares.include?(5) && square.nil? # pick 5
+    return super if square.nil? # pick random
+
+    board[square] = marker
+  end
+
+  def to_s
+    "Computer"
   end
 end
 
 class TTTGame
-  include Joinable
-
   FIRST_PLAYER = 'coin toss'
-  WINNING_SCORE = 3
+  WINNING_SCORE = 5
 
   attr_reader :board, :human, :computer, :players,
               :current_player, :round_winner, :champion
 
   def initialize
-    screen_clear
-
     @board = Board.new
     @human = Human.new
-    @computer = Computer.new(human)
+    @computer = Computer.new
     @current_player = nil
     @round_winner = nil
     @champion = nil
@@ -208,7 +194,12 @@ class TTTGame
       loop do
         set_first_player
         display_board
-        player_turns
+
+        loop do
+          current_player_marks_board
+          break if board.someone_won? || board.full?
+          clear_and_display_board if human_turn?
+        end
 
         find_winner_and_update_score
         break if champion?
@@ -238,9 +229,11 @@ class TTTGame
     end
 
     puts "First Player: #{current_player}."
-    while current_player == computer
-      puts "Press enter to begin."
-      break if gets.chomp.empty?
+    if current_player == computer
+      loop do
+        puts "Press enter to begin."
+        break if gets.chomp.empty?
+      end
     end
   end
 
@@ -264,7 +257,7 @@ class TTTGame
   end
 
   def display_board
-    puts "#{human} is #{human.marker}. #{computer} is #{computer.marker}."
+    puts "You're #{human.marker}. Computer is #{computer.marker}."
     display_scores
     board.display
     puts ''
@@ -282,35 +275,9 @@ class TTTGame
     puts ''
   end
 
-  def player_turns
-    loop do
-      current_player_marks_board
-      break if board.someone_won? || board.full?
-      clear_and_display_board if human_turn?
-    end
-  end
-
   def current_player_marks_board
-    square = human_turn? ? human_moves : computer_moves
-    board[square] = current_player.marker
+    current_player.mark(board)
     switch_to_next_player
-  end
-
-  def human_moves
-    avail_squares = joinor(board.unmarked_squares)
-    puts "Choose an empty square (#{avail_squares})."
-    answer = nil
-
-    loop do
-      answer = gets.chomp.to_i
-      break if board.unmarked_squares.include?(answer)
-      puts "Sorry, choose an empty square (#{avail_squares})."
-    end
-    answer
-  end
-
-  def computer_moves
-    board.find_move(current_player.marker)
   end
 
   def switch_to_next_player
@@ -326,17 +293,17 @@ class TTTGame
 
   def find_winner_and_update_score
     case board.winning_marker
-    when human.marker
-      winner(human)
-    when computer.marker
-      winner(computer)
+    when Human::MARKER
+      @round_winner = human
+      human.score += 1
+      @champion = human if human.score >= 5
+    when Computer::MARKER
+      @round_winner = computer
+      computer.score += 1
+      @champion = computer if computer.score >= 5
+    else
+      return
     end
-  end
-
-  def winner(player)
-    @round_winner = player
-    player.score += 1
-    @champion = player if player.score >= WINNING_SCORE
   end
 
   def champion?
