@@ -57,4 +57,7 @@ Chapter 4: Inheritance
 - Assignment: Some Improvements - 27/05/2018
 - Lecture: Discussion on OO TTT Code - 27/05/2018
 - Rubocop OO TTT - 27/05/2018
-- Assignment: OO TTT Bonus Features - in progress
+- Assignment: OO TTT Bonus Features - 30/05/2018
+- Assignment: OO Twenty-One - 06/06/2018
+- Reference Implementation: OO Twenty-One - 06/06/2018
+- Rubocop OO Twenty-One - 06/06/2018
